@@ -1,0 +1,95 @@
+version: '3.8'
+services:
+  api-gateway:
+    build: 
+      context: ./api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - user-service
+      - item-service
+      - order-service
+
+  user-service:
+    build:
+      context: ./user-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - user-db
+    environment:
+      - DB_HOST=user-db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=userdb
+
+  item-service:
+    build:
+      context: ./item-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      - item-db
+    environment:
+      - DB_HOST=item-db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=itemdb
+
+  order-service:
+    build:
+      context: ./order-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      - order-db
+      - user-service
+      - item-service
+    environment:
+      - DB_HOST=order-db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=orderdb
+      - USER_SERVICE_URL=http://user-service:8081
+      - ITEM_SERVICE_URL=http://item-service:8082
+
+  user-db:
+    image: postgres:alpine
+    environment:
+      POSTGRES_DB: userdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - user-db-data:/var/lib/postgresql/data
+
+  item-db:
+    image: postgres:alpine
+    environment:
+      POSTGRES_DB: itemdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - item-db-data:/var/lib/postgresql/data
+
+  order-db:
+    image: postgres:alpine
+    environment:
+      POSTGRES_DB: orderdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - order-db-data:/var/lib/postgresql/data
+
+volumes:
+  user-db-data:
+  item-db-data:
+  order-db-data: 
