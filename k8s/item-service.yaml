@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
       - name: item-service
-        image: demo-ms-app-item-service:latest
-        imagePullPolicy: Never
+        image: ninjadoc/demo-ms-app-item-service:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8082
         env:

@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
       - name: order-service
-        image: demo-ms-app-order-service:latest
-        imagePullPolicy: Never
+        image: ninjadoc/demo-ms-app-order-service:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8083
         env:

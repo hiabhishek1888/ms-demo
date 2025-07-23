@@ -4,7 +4,7 @@ metadata:
   name: user-db
 spec:
   serviceName: user-db
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: user-db
@@ -54,7 +54,7 @@ metadata:
   name: item-db
 spec:
   serviceName: item-db
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: item-db
@@ -104,7 +104,7 @@ metadata:
   name: order-db
 spec:
   serviceName: order-db
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: order-db

@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
       - name: user-service
-        image: demo-ms-app-user-service:latest
-        imagePullPolicy: Never
+        image: ninjadoc/demo-ms-app-user-service:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8081
         env:
