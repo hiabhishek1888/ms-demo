@@ -33,7 +33,7 @@ if [[ "$choice" =~ ^[Yy](es)?$ ]]; then
     echo "[INFO] installing golang"
     sudo snap install go  --classic
     echo "[INFO] running golang proxy server in background (not to block current process)"
-    sh ./proxy_start.sh & 
+    bash ./proxy_start.sh & 
     echo "-"
     echo "-"
     echo "[INFO] Proxy listening on :29999 → forwarding to :30080"
