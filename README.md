@@ -5,7 +5,8 @@ How to run:
 4. run `limactl shell master` - go inside master
 5. cd to start/
 6. run `chmod +x start_k8_app_and_proxy_server.sh`
-7. run `sh start_k8_app_and_proxy_server.sh` - this will clone app repo from github and start k8 app and ask if you want proxy server so that you can communicate from host... () and run proxy in background
+7. run `bash start_k8_app_and_proxy_server.sh` - this will clone app repo from github and start k8 app and
+ ask if you want proxy server so that you can communicate from host... () and run proxy in background
 
 
 
