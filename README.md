@@ -1,3 +1,18 @@
+How to run:
+1. clone the repo
+2. cd to ms-demo/lima-vm-config
+3. run `sh k8infraprovision.sh` - this will create and start VM and setup K8 cluster, control plane on master and join worker and copy the automation script which will start k8 app and setup proxy automatically
+4. run `limactl shell master` - go inside master
+5. cd to start/
+6. run `chmod +x start_k8_app_and_proxy_server.sh`
+7. run `sh start_k8_app_and_proxy_server.sh` - this will clone app repo from github and start k8 app and ask if you want proxy server so that you can communicate from host... () and run proxy in background
+
+
+
+
+
+
+
 # Microservices Demo Application
 
 This is a simple microservices-based application built with Go, consisting of three services (User, Item, and Order) and an API Gateway.
