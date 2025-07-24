@@ -1,4 +1,5 @@
 a demo microservice application with 3 services (simple order, item and user services), built using Golang for rest apis, postgresql for DB, docker for building image and pushing to docker hub and basic Kubernetes local setup on top of LIMA virtual machines using kubeadm to test basic scaling and other features.
+
 Note: LIMA vm supports 2 type of vm, vz - for macOS and qemu for others OS. Above setup work for vz type VM (only on macOS silicon). Alternatively, You can get idea how and with minor config changes, you can setup on other OS too.
 
 Automation scripts includes lima vm provisioning, k8 cluster setup and starting the app and proxy server without any manual setup.
