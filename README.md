@@ -8,7 +8,7 @@ Automation scripts includes lima vm provisioning, k8 cluster setup and starting 
 
 How to run:
 1. clone the repo
-2. cd to ms-demo/lima-vm-config
+2. cd to microservices-demo/lima-vm-config
 3. run `bash k8infraprovision.sh` - this will create and start VM and setup K8 cluster, control plane on master and join worker and copy the automation script which will start k8 app and setup proxy automatically
 4. run `limactl shell master` - go inside master
 5. cd to start/
