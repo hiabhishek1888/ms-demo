@@ -1,7 +1,14 @@
+a demo microservice application with 3 services (simple order, item and user services), built using Golang for rest apis, postgresql for DB, docker for building image and pushing to docker hub and basic Kubernetes local setup on top of LIMA virtual machines using kubeadm to test basic scaling and other features.
+Note: LIMA vm supports 2 type of vm, vz - for macOS and qemu for others OS. Above setup work for vz type VM (only on macOS silicon). Alternatively, You can get idea how and with minor config changes, you can setup on other OS too.
+
+Automation scripts includes lima vm provisioning, k8 cluster setup and starting the app and proxy server without any manual setup.
+
+
+
 How to run:
 1. clone the repo
 2. cd to ms-demo/lima-vm-config
-3. run `sh k8infraprovision.sh` - this will create and start VM and setup K8 cluster, control plane on master and join worker and copy the automation script which will start k8 app and setup proxy automatically
+3. run `bash k8infraprovision.sh` - this will create and start VM and setup K8 cluster, control plane on master and join worker and copy the automation script which will start k8 app and setup proxy automatically
 4. run `limactl shell master` - go inside master
 5. cd to start/
 6. run `chmod +x start_k8_app_and_proxy_server.sh`
