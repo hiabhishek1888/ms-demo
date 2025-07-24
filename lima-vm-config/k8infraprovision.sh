@@ -22,11 +22,15 @@ limactl shell worker2 sudo $JOIN_CMD
 
 
 # Copying the start script master node in start directory
-
-limactl shell master "mkdir -p \$HOME/start"
-limactl copy ../start_k8_app_and_proxy_server.sh master:$(limactl shell master 'echo $HOME')/start/start_k8_app_and_proxy_server.sh
-
-
+limactl shell master -- bash -c 'mkdir -p "${HOME}/start"'
+# Copy the script using absolute paths
+SCRIPT_PATH="../start_k8_app_and_proxy_server.sh"
+if [ -f "$SCRIPT_PATH" ]; then
+    limactl copy "$SCRIPT_PATH" "master:~/start/start_k8_app_and_proxy_server.sh"
+else
+    echo "Error: Script file $SCRIPT_PATH not found" >&2
+    exit 1
+fi
 
 # TODO: create the func or have an exclusive check if vm are created already then just start it
 #       or if it is created and stopped, then start it.. 
