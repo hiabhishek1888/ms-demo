@@ -1,0 +1,133 @@
+---
+cpus: 4
+memory: "4GiB"
+disk: "20GiB"
+
+images:
+  - location: "https://cloud-images.ubuntu.com/releases/oracular/release-20250502/ubuntu-24.10-server-cloudimg-amd64.img"
+    arch: "x86_64"
+    digest: "sha256:ad138a12a105ba1d6138fee0a7827de9edb04c8e3497c4ee03bfb00222e47668"
+  - location: "https://cloud-images.ubuntu.com/releases/oracular/release-20250502/ubuntu-24.10-server-cloudimg-arm64.img"
+    arch: "aarch64"
+    digest: "sha256:ed3eb300e553f30b6d7ba5a18c9c654848e706e9701eb904e46a374f204d2e89"
+  - location: "https://cloud-images.ubuntu.com/releases/oracular/release-20250502/ubuntu-24.10-server-cloudimg-riscv64.img"
+    arch: "riscv64"
+    digest: "sha256:6879c1d7eefe03ac061647ea96d189608e5cfb18e9c2432bbb91dbc2c74913fc"
+  - location: "https://cloud-images.ubuntu.com/releases/oracular/release-20250502/ubuntu-24.10-server-cloudimg-armhf.img"
+    arch: "armv7l"
+    digest: "sha256:248d6d6fbe0ac73448f7ec984db2ecfce89602767634d09b6d631e7fa3286047"
+  - location: "https://cloud-images.ubuntu.com/releases/oracular/release-20250502/ubuntu-24.10-server-cloudimg-s390x.img"
+    arch: "s390x"
+    digest: "sha256:84d6f5289747170a5b0e405e82fd947bafb9e40dfe0ac858ba4b81f8e5b61a2d"
+  - location: "https://cloud-images.ubuntu.com/releases/oracular/release-20250502/ubuntu-24.10-server-cloudimg-ppc64el.img"
+    arch: "ppc64le"
+    digest: "sha256:063768391a5f9353d1c2f24479f762f3e0abac35a86e9b93a77db03b519381e6"
+
+networks:
+  - lima: user-v2
+
+portForwards:
+  - guestPort: 30080   # Inside VM (where your app runs)
+    hostPort: 30080    # On Mac (accessible via http://localhost:30080)
+
+
+provision:
+  - mode: system
+    script: |
+      #!/bin/bash
+      set -euo pipefail
+      set -euo pipefail
+      LOGFILE=/var/log/lima-provision-system.log
+      exec > >(tee -a $LOGFILE) 2>&1
+
+
+      # 1. Install dependencies (idempotent)
+      export DEBIAN_FRONTEND=noninteractive
+      apt-get update
+      apt-get install -y apt-transport-https ca-certificates curl gpg
+
+      # 2. Configure containerd (if not already done)
+      if ! command -v containerd >/dev/null; then
+          apt-get install -y containerd
+          mkdir -p /etc/containerd
+          containerd config default | tee /etc/containerd/config.toml
+          sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+          systemctl restart containerd
+      fi
+
+      # 3. Add Kubernetes repo (new official URL)
+      if [[ ! -f /etc/apt/keyrings/kubernetes-apt-keyring.gpg ]]; then
+          mkdir -p /etc/apt/keyrings
+          curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | \
+              gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+          echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /" | \
+              tee /etc/apt/sources.list.d/kubernetes.list
+      fi
+
+      # 4. Install Kubernetes components
+      if ! command -v kubeadm >/dev/null; then
+          apt-get update
+          apt-get install -y kubelet kubeadm kubectl
+          apt-mark hold kubelet kubeadm kubectl
+      fi
+
+      # 5. Enable services
+      systemctl enable --now containerd
+      systemctl enable --now kubelet
+
+
+      # 6. Load the module and set the required sysctl values for Kubernetes:
+      
+      # -Load the br_netfilter module      
+      sudo modprobe br_netfilter
+      # -Ensure it loads on boot
+      echo 'br_netfilter' | sudo tee /etc/modules-load.d/k8s.conf
+      # -Set sysctl params for Kubernetes networking
+      sudo tee /etc/sysctl.d/k8s.conf <<EOF
+      net.bridge.bridge-nf-call-iptables  = 1
+      net.bridge.bridge-nf-call-ip6tables = 1
+      net.ipv4.ip_forward                 = 1
+      EOF
+      # -Apply the settings
+      sudo sysctl --system
+
+      # step 6- one liner for all above steps
+      # sudo modprobe br_netfilter && echo -e "net.bridge.bridge-nf-call-iptables=1\nnet.bridge.bridge-nf-call-ip6tables=1\nnet.ipv4.ip_forward=1" | sudo tee /etc/sysctl.d/k8s.conf > /dev/null && sudo sysctl --system
+
+      # 7. Initialize control plane on master node
+      echo "[INFO] Installing kubernetes"
+      sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+
+  - mode: user
+    script: |
+      #!/bin/bash
+      set -euo pipefail
+      set -euo pipefail
+      LOGFILE=$HOME/lima-provision-user.log
+      exec > >(tee -a $LOGFILE) 2>&1
+
+
+      # 8. Configure kubectl for regular user
+      echo "[INFO] Setting up kubeconfig"
+      mkdir -p $HOME/.kube
+      sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+      sudo chown $(id -u):$(id -g) $HOME/.kube/config
+      
+      # 9. Install Network Plugin (Flannel)
+      echo "[INFO] Installing Flannel"
+      kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+      
+      # 10. Remove Taints for Single-Node Cluster
+      #     If this will be a single-node cluster (for development):
+      #  kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+
+      # 11. ONLY IF YOU ARE USING DATABASE IN YOUR CLUSTER
+      #     Database pods (the StatefulSets) will stuck in Pending because their PersistentVolumeClaims (PVCs) cannot be fulfilled
+      #     — there is no default StorageClass or dynamic storage provisioner in kubeadm cluster by default.
+      #     For local/multinode clusters, a solution is to install the local-path-provisioner, which uses local disk on each node for storage.
+      # 1. Apply the local-path-provisioner manifest:
+      kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
+      # 2. Set it as the default StorageClass:
+      kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+      # 3. Verify
+      # kubectl get storageclass
