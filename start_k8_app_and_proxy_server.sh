@@ -5,8 +5,8 @@ echo "[INFO........] Cloning k8 deployment yaml from github"
 
 mkdir project
 cd project
-git clone https://github.com/hiabhishek1888/ms-demo.git
-cd ms-demo
+git clone https://github.com/hiabhishek1888/microservices-demo.git
+cd microservices-demo
 
 echo "[INFO] applying dep yaml and starting app"
 kubectl apply -f k8s/
