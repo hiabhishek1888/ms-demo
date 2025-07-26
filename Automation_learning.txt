@@ -1,6 +1,0 @@
-- created script to automate infra provisioning and infra destroy for k8s (not for prod)
-- created lima yaml with script to setup initial requirement for deployment 
-    like installation of k8 components, packages, dependencies and control plane setup, etc.
-- created startup-script and copied to provisioning script, to copy it to home dir and so it can be executed when logged to VM..  
-    start-up script, when executed after loggin, it clone the git repository 
-    and automatically apply the k8 deployment yamls and start the proxy server in background. 
