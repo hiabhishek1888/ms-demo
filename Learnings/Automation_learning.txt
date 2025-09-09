@@ -4,3 +4,5 @@
 - created startup-script and copied to provisioning script, to copy it to home dir and so it can be executed when logged to VM..  
     start-up script, when executed after loggin, it clone the git repository 
     and automatically apply the k8 deployment yamls and start the proxy server in background. 
+
+// checking the change in automation learning
