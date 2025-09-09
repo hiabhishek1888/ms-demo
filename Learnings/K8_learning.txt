@@ -1,3 +1,5 @@
+checking the change in k8s learning !!
+ i am lost :{}
 
 A little background, To understand it, 
 I have a laptop and LIMA VM running on top of it and i am able to create k8 cluster successfully and deployed app on it,
